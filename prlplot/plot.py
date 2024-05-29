@@ -39,6 +39,8 @@ def figure(*args, **kwargs):
     """
     Context manager for creating and styling a Matplotlib figure with predefined configurations.
 
+    All arguments are forwarded to `plt.figure()`
+
     Yields:
         Figure: The Matplotlib figure object.
     """
