@@ -1,9 +1,11 @@
 from contextlib import contextmanager
 from typing import Optional, Union
+import warnings
 
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+import matplotlib.font_manager
 from matplotlib.transforms import Bbox
 
 from .util import collapse_dict, generate_baseline_color
@@ -23,6 +25,13 @@ RC_CONFIG = collapse_dict({
     "legend": {"fontsize": TEXT_SIZE},
     "figure": {"titlesize": TEXT_SIZE, "figsize": FIG_SIZE},
 })
+
+# Fall back to generic serif font if requested font is unavailable
+fonts = set(f.name for f in matplotlib.font_manager.fontManager.ttflist)
+if RC_CONFIG["font.family"] not in fonts:
+    warnings.warn(f"Default font \"{RC_CONFIG['font.family']}\" not available, "
+                  "falling back to generic serif font.")
+    RC_CONFIG["font.family"] = "serif"
 
 
 @contextmanager
