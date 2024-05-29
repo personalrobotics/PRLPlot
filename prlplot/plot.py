@@ -6,13 +6,13 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.transforms import Bbox
 
-from .util import collapse_dict
+from .util import collapse_dict, generate_baseline_color
 
 # Default figure size and text size
 FIG_SIZE = (7/4, 21/16)
 TEXT_SIZE = 7
 OURS_COLOR = "#d00"
-BASELINE_COLORS = ["#b3cfff"]
+BASELINE_COLORS = ["#b3cfff", "#b3ffcf", "#b3ffff"]
 
 # Matplotlib configuration dictionary for consistent styling
 RC_CONFIG = collapse_dict({
@@ -70,16 +70,19 @@ def finalize_axes(ax: Axes):
     ax.set_ylabel(ax.get_ylabel(), labelpad=-ax.yaxis.label.get_fontsize())
 
 
-def plot_kwargs(baseline: Optional[Union[str, int]] = None, **kwargs):
+def plot_kwargs(baseline: Optional[Union[str, int]] = None, n_baselines: Optional[int] = None, **kwargs):
     """
     Generates keyword arguments for plotting.
 
     Args:
-        baseline (Optional[Union[str, int]]): If None, plots data as "ours",
-            which will be the most prominent color. If an integer, plots data
-            with a prespecified less prominent color. Otherwise, if a string,
-            plots data with the color specified by the string.
-        **kwargs: Additional keyword arguments for plotting.
+        baseline (Optional[Union[str, int]]): 
+            - If None, plots data as "ours", which will be the most prominent color.
+            - If an integer, plots data with a prespecified less prominent color. 
+              Defaults to a hardcoded list of colors, specify `n_baselines` to generate unique colors for each baseline.
+            - If a string, plots data with the color specified by the string.
+        n_baselines (Optional[int]): The number of baselines being plotted, used to generate unique colors for each baseline.
+            If unspecified, defaults to a hardcoded list of colors, which may be insufficient for many baselines.
+        **kwargs: Additional keyword arguments for plotting, inserted verbatim into the returned dict.
 
     Returns:
         dict: A dictionary of plot keyword arguments.
@@ -87,9 +90,13 @@ def plot_kwargs(baseline: Optional[Union[str, int]] = None, **kwargs):
     if baseline is None:
         color = OURS_COLOR
     elif isinstance(baseline, int):
-        assert 0 <= baseline < len(
-            BASELINE_COLORS), "Baseline index exceeds the number of hardcoded colors! Please specify a custom baseline color."
-        color = BASELINE_COLORS[baseline]
+        if n_baselines is None or n_baselines <= len(BASELINE_COLORS):
+            assert 0 <= baseline < len(BASELINE_COLORS), \
+                "Baseline index exceeds the number of hardcoded colors! " \
+                "Please specify a custom baseline color or the number of baselines."
+            color = BASELINE_COLORS[baseline]
+        else:
+            color = generate_baseline_color(baseline, n_baselines)
     else:
         color = baseline
     new_kwargs = {
@@ -101,21 +108,24 @@ def plot_kwargs(baseline: Optional[Union[str, int]] = None, **kwargs):
     return new_kwargs
 
 
-def line_plot_kwargs(baseline: Optional[Union[str, int]] = None, **kwargs):
+def line_plot_kwargs(baseline: Optional[Union[str, int]] = None, n_baselines: Optional[int] = None, **kwargs):
     """
     Generates keyword arguments for line plots.
 
     Args:
-        baseline (Optional[Union[str, int]]): If None, plots data as "ours",
-            which will be the most prominent color. If an integer, plots data
-            with a prespecified less prominent color. Otherwise, if a string,
-            plots data with the color specified by the string.
-        **kwargs: Additional keyword arguments for line plotting.
+        baseline (Optional[Union[str, int]]): 
+            - If None, plots data as "ours", which will be the most prominent color.
+            - If an integer, plots data with a prespecified less prominent color. 
+              Defaults to a hardcoded list of colors, specify `n_baselines` to generate unique colors for each baseline.
+            - If a string, plots data with the color specified by the string.
+        n_baselines (Optional[int]): The number of baselines being plotted, used to generate unique colors for each baseline.
+            If unspecified, defaults to a hardcoded list of colors, which may be insufficient for many baselines.
+        **kwargs: Additional keyword arguments for plotting, inserted verbatim into the returned dict.
 
     Returns:
         dict: A dictionary of line plot keyword arguments.
     """
-    new_kwargs = plot_kwargs(baseline)
+    new_kwargs = plot_kwargs(baseline, n_baselines)
     new_kwargs.update({
         "markersize": 2,
         "markeredgecolor": new_kwargs["color"],
