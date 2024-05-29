@@ -1,7 +1,7 @@
 from typing import Any, Dict
 
 
-def collapse_dict(d: Dict[str, Any], keys=None):
+def collapse_dict(d: Dict[str, Any], keys=None) -> Dict[str, Any]:
     if keys is None:
         keys = []
     new_d = {}
